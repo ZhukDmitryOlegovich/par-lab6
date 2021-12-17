@@ -11,6 +11,8 @@ public class ActorConfig extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
+                .match(MessageGetRandomServerUrl.class, msg -> sender()
+                        .tell())
                 .build();
     }
 

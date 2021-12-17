@@ -1,2 +1,3 @@
-package PACKAGE_NAME;public class MessageGetRandomServerUrl {
+public class MessageGetRandomServerUrl {
+    public MessageGetRandomServerUrl() {}
 }
