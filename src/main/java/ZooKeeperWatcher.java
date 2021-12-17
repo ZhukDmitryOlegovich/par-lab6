@@ -22,8 +22,9 @@ public class ZooKeeperWatcher implements Watcher {
 
     private void sendServers() throws InterruptedException, KeeperException {
         ArrayList<String> servers = new ArrayList<>();
-        zooKeeper.getChildren(SERVERS_PATH, this).stream().map(
-                s -> new String()
-        )
+        for (String s : zooKeeper.getChildren(SERVERS_PATH, this)) {
+            servers.add(new String(zooKeeper.getData(SERVERS_PATH + "/" + s, false, null)));
+        }
+        actorConfig.tell(new MessageSendServersList(servers),  ActorRef.noSender());
     }
 }
