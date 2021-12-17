@@ -26,7 +26,7 @@ public class AnonymizeApp {
 
         try {
             zooKeeper = new ZooKeeper(args[0], 3000, null);
-//            new ZooKeeperWatcher()
+            new ZooKeeperWatcher(zooKeeper, actorConfig);
         } catch (IOException e) {
             e.printStackTrace();
         }
