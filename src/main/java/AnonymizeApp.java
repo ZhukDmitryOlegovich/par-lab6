@@ -1,9 +1,14 @@
+import akka.NotUsed;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.ServerBinding;
+import akka.http.javadsl.model.HttpRequest;
+import akka.http.javadsl.model.HttpResponse;
 import akka.stream.ActorMaterializer;
+import akka.stream.javadsl.Flow;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
@@ -39,9 +44,15 @@ public class AnonymizeApp {
         ArrayList<CompletionStage<ServerBinding>> bindings = new ArrayList<>();
 
         StringBuilder serversInfo = new StringBuilder("Servers online at\n");
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             try {
-
+                HttpServer server = new HttpServer(http, actorConfig, zooKeeper, args[i]);
+                final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow
+                        = server.createRoute().flow(system, materializer);
+                bindings.add(http.bindAndHandle(
+                        routeFlow,
+                        ConnectHttp.toHost(HOST, )
+                ))
             }
         }
     }
