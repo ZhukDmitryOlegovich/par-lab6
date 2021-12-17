@@ -66,6 +66,6 @@ public class AnonymizeApp {
             System.err.println("NO SERVERS ARE RUNNING");
         }
 
-        System.out.println(serversInfo + "");
+        System.out.println(serversInfo + "\nPress RETURN to stop...");
     }
 }
