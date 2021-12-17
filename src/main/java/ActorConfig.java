@@ -1,4 +1,5 @@
 import akka.actor.AbstractActor;
+import akka.actor.Actor;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -11,8 +12,13 @@ public class ActorConfig extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(MessageGetRandomServerUrl.class, msg -> sender()
-                        .tell())
+                .match(
+                        MessageGetRandomServerUrl.class,
+                        msg -> sender().tell(
+                                getRandomServerPort(),
+                                Actor.noSender()
+                        )
+                )
                 .build();
     }
 
