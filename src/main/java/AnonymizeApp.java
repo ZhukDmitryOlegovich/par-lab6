@@ -41,7 +41,7 @@ public class AnonymizeApp {
         StringBuilder serversInfo = new StringBuilder("Servers online at\n");
         for (int i = 0; i < args.length; i++) {
             try {
-                
+
             }
         }
     }
