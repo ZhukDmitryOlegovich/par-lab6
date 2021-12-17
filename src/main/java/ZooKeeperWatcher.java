@@ -6,6 +6,8 @@ import org.apache.zookeeper.ZooKeeper;
 import java.util.ArrayList;
 
 public class ZooKeeperWatcher implements Watcher {
+    private static final String SERVERS_PATH = "/servers";
+
     private final ZooKeeper zooKeeper;
     private final ActorRef actorConfig;
 
@@ -14,12 +16,12 @@ public class ZooKeeperWatcher implements Watcher {
         this.actorConfig = actorConfig;
         this.zooKeeper = zooKeeper;
 
-        byte[] data = this.zooKeeper.getData("/servers", true, null);
+        byte[] data = this.zooKeeper.getData(SERVERS_PATH, true, null);
         System.out.printf("servers data=%s", new String(data));
     }
 
-    private void sendServers() {
+    private void sendServers() throws InterruptedException, KeeperException {
         ArrayList<String> servers = new ArrayList<>();
-        zooKeeper.getChildren()
+        zooKeeper.getChildren(SERVERS_PATH, this)
     }
 }
