@@ -27,7 +27,7 @@ public class AnonymizeApp {
             System.exit(-1);
         }
         BasicConfigurator.configure();
-        System.out.println("Start! Ports: " + Arrays.toString(args));
+        System.out.printf("Start! Ports: %s\n", Arrays.toString(args));
         ActorSystem system = ActorSystem.create("lab6");
         ActorRef actorConfig = system.actorOf(Props.create(ActorConfig.class));
         final ActorMaterializer materializer = ActorMaterializer.create(system);
@@ -66,13 +66,18 @@ public class AnonymizeApp {
             System.err.println("NO SERVERS ARE RUNNING");
         }
 
-        System.out.println(serversInfo + "\nPress RETURN to stop...");
+        System.out.printf("%s\nPress RETURN to stop...\n", serversInfo);
 
         try {
             System.in.read();
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
+        }
+
+        for (CompletionStage<ServerBinding> binding : bindings) {
+            binding.thenCompose(ServerBinding::unbind)
+                    .thenAccept(unbound -> system.terminate());
         }
     }
 }
