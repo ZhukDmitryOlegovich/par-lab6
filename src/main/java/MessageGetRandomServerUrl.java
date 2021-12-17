@@ -1,3 +1,4 @@
 public class MessageGetRandomServerUrl {
-    public MessageGetRandomServerUrl() {}
+    MessageGetRandomServerUrl() {
+    }
 }
