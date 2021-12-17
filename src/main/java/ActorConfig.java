@@ -19,6 +19,10 @@ public class ActorConfig extends AbstractActor {
                                 Actor.noSender()
                         )
                 )
+                .match(
+                        MessageSendServersList.class,
+                        msg -> servers = msg.getServers()
+                )
                 .build();
     }
 
