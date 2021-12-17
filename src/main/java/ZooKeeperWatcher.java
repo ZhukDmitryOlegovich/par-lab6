@@ -1,5 +1,6 @@
 import akka.actor.ActorRef;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -23,8 +24,20 @@ public class ZooKeeperWatcher implements Watcher {
     private void sendServers() throws InterruptedException, KeeperException {
         ArrayList<String> servers = new ArrayList<>();
         for (String s : zooKeeper.getChildren(SERVERS_PATH, this)) {
-            servers.add(new String(zooKeeper.getData(SERVERS_PATH + "/" + s, false, null)));
+            servers.add(new String(zooKeeper.getData(
+                    SERVERS_PATH + "/" + s, false, null
+            )));
         }
-        actorConfig.tell(new MessageSendServersList(servers),  ActorRef.noSender());
+        actorConfig.tell(new MessageSendServersList(servers), ActorRef.noSender());
+    }
+
+    @Override
+    public void process(WatchedEvent watchedEvent) {
+        try {
+            zooKeeper.getChildren(SERVERS_PATH, this);
+            sendServers();
+        } catch (InterruptedException | KeeperException e) {
+            e.printStackTrace();
+        }
     }
 }
