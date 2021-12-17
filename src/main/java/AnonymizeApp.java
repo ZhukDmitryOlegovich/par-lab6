@@ -61,5 +61,9 @@ public class AnonymizeApp {
                 e.printStackTrace();
             }
         }
+
+        if (bindings.size() == 0) {
+            System.err.println();
+        }
     }
 }
