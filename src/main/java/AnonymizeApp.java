@@ -63,7 +63,9 @@ public class AnonymizeApp {
         }
 
         if (bindings.size() == 0) {
-            System.err.println();
+            System.err.println("NO SERVERS ARE RUNNING");
         }
+
+        System.out.println("");
     }
 }
