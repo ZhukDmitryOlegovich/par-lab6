@@ -1,11 +1,13 @@
 import akka.actor.ActorRef;
 import akka.http.javadsl.Http;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import akka.http.javadsl.model.HttpRequest;
+import akka.http.javadsl.server.Route;
+import akka.pattern.Patterns;
+import org.apache.zookeeper.*;
 
 import java.time.Duration;
+
+import static akka.http.javadsl.server.Directives.*;
 
 public class HttpServer implements Watcher {
     private static final String PATH = "";
@@ -31,5 +33,40 @@ public class HttpServer implements Watcher {
                 ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL
         );
+    }
+
+    public Route createRoute() {
+        return route(path(PATH, () -> route(get(() -> parameter(URL_QUERY_PARAM, (url) ->
+                parameter(COUNT_QUERY_PARAM, (count) -> {
+                    System.out.printf("count=%s on %s", count, path);
+                    if (count.equals(ZERO_COUNT_STRING)) {
+                        return completeWithFuture(
+                                http.singleRequest(HttpRequest.create(url))
+                        );
+                    }
+                    return completeWithFuture(Patterns.ask(
+                                    actorConfig,
+                                    new MessageGetRandomServerUrl(),
+                                    TIMEOUT
+                            )
+                            .thenCompose(resPort -> http.singleRequest(HttpRequest.create(
+                                    String.format(
+                                            URL_PATTERN,
+                                            resPort,
+                                            url,
+                                            Integer.parseInt(count) - 1
+                                    )
+                            ))));
+                })
+        )))));
+    }
+
+    @Override
+    public void process(WatchedEvent watchedEvent) {
+        try {
+            zooKeeper.getData(path, this, null);
+        } catch (InterruptedException | KeeperException e) {
+            e.printStackTrace();
+        }
     }
 }
