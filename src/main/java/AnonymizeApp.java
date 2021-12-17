@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.concurrent.CompletionStage;
 
 public class AnonymizeApp {
+    private static final String HOST = "localhost";
+
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage: need ports >2");
@@ -51,9 +53,11 @@ public class AnonymizeApp {
                         = server.createRoute().flow(system, materializer);
                 bindings.add(http.bindAndHandle(
                         routeFlow,
-                        ConnectHttp.toHost(HOST, )
-                ))
-            }
+                        ConnectHttp.toHost(HOST, Integer.parseInt(args[i])),
+                        materializer
+                ));
+                serversInfo.append("http://localhost:").append(args[i]).append("/\n");
+            } catch ()
         }
     }
 }
