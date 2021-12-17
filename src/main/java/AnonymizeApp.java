@@ -2,12 +2,16 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.http.javadsl.Http;
+import akka.http.javadsl.ServerBinding;
 import akka.stream.ActorMaterializer;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.CompletionStage;
 
 public class AnonymizeApp {
     public static void main(String[] args) {
@@ -27,8 +31,18 @@ public class AnonymizeApp {
         try {
             zooKeeper = new ZooKeeper(args[0], 3000, null);
             new ZooKeeperWatcher(zooKeeper, actorConfig);
-        } catch (IOException e) {
+        } catch (KeeperException | IOException | InterruptedException e) {
             e.printStackTrace();
+            System.exit(-1);
+        }
+
+        ArrayList<CompletionStage<ServerBinding>> bindings = new ArrayList<>();
+
+        StringBuilder serversInfo = new StringBuilder("Servers online at\n");
+        for (int i = 0; i < args.length; i++) {
+            try {
+                
+            }
         }
     }
 }
