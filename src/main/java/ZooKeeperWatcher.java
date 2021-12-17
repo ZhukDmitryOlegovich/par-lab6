@@ -1,2 +1,5 @@
-package PACKAGE_NAME;public class ZooKeeperWatcher {
+import org.apache.zookeeper.Watcher;
+
+public class ZooKeeperWatcher extends Watcher {
+    
 }
