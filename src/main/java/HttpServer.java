@@ -23,13 +23,15 @@ public class HttpServer implements Watcher {
     private final ZooKeeper zooKeeper;
     private final String path;
 
-    HttpServer(Http http, ActorRef actorConfig, ZooKeeper zooKeeper, String port) {
+    HttpServer(Http http, ActorRef actorConfig, ZooKeeper zooKeeper, String port)
+            throws InterruptedException, KeeperException {
         this.http = http;
         this.actorConfig = actorConfig;
         this.zooKeeper = zooKeeper;
         this.path = PATH_SERVERS + port;
         zooKeeper.create(
                 "/servers/" + path,
+                path.getBytes(),
                 ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL
         );
