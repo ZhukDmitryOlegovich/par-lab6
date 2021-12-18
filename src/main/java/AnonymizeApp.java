@@ -19,11 +19,13 @@ import java.util.Arrays;
 import java.util.concurrent.CompletionStage;
 
 public class AnonymizeApp {
-    private static final String HOST = "localhost";
+    public static final String HOST_ORIGIN = "localhost";
+    private static final String HOST_URL = String.format("http://%s:", HOST_ORIGIN);
+    private static final int TIMEOUT = 3000;
 
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.err.println("Usage: need ports >2");
+            System.err.println("Usage: need port");
             System.exit(-1);
         }
         BasicConfigurator.configure();
@@ -36,7 +38,7 @@ public class AnonymizeApp {
         ZooKeeper zooKeeper = null;
 
         try {
-            zooKeeper = new ZooKeeper(args[0], 3000, null);
+            zooKeeper = new ZooKeeper(args[0], TIMEOUT, null);
             new ZooKeeperWatcher(zooKeeper, actorConfig);
         } catch (KeeperException | IOException | InterruptedException e) {
             e.printStackTrace();
@@ -46,24 +48,20 @@ public class AnonymizeApp {
         ArrayList<CompletionStage<ServerBinding>> bindings = new ArrayList<>();
 
         StringBuilder serversInfo = new StringBuilder("Servers online at\n");
-        for (int i = 1; i < args.length; i++) {
-            try {
-                HttpServer server = new HttpServer(http, actorConfig, zooKeeper, args[i]);
-                final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow
-                        = server.createRoute().flow(system, materializer);
-                bindings.add(http.bindAndHandle(
-                        routeFlow,
-                        ConnectHttp.toHost(HOST, Integer.parseInt(args[i])),
-                        materializer
-                ));
-                serversInfo.append("http://localhost:").append(args[i]).append("/\n");
-            } catch (InterruptedException | KeeperException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (bindings.size() == 0) {
-            System.err.println("NO SERVERS ARE RUNNING");
+        String port = args[1];
+        try {
+            HttpServer server = new HttpServer(http, actorConfig, zooKeeper, port);
+            final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow
+                    = server.createRoute().flow(system, materializer);
+            bindings.add(http.bindAndHandle(
+                    routeFlow,
+                    ConnectHttp.toHost(HOST_ORIGIN, Integer.parseInt(port)),
+                    materializer
+            ));
+            serversInfo.append(HOST_URL).append(port).append("/\n");
+        } catch (InterruptedException | KeeperException e) {
+            e.printStackTrace();
+            System.exit(-1);
         }
 
         System.out.printf("%s\nPress RETURN to stop...\n", serversInfo);

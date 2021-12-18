@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class ZooKeeperWatcher implements Watcher {
     private static final String SERVERS_PATH = "/servers";
+    private static final String FORMAT_JOIN_PATH = "%s/%s";
 
     private final ZooKeeper zooKeeper;
     private final ActorRef actorConfig;
@@ -21,11 +22,15 @@ public class ZooKeeperWatcher implements Watcher {
         System.out.printf("servers data=%s", new String(data));
     }
 
+    public static String joinPath(String s) {
+        return String.format(FORMAT_JOIN_PATH, SERVERS_PATH, s);
+    }
+
     private void sendServers() throws InterruptedException, KeeperException {
         ArrayList<String> servers = new ArrayList<>();
         for (String s : zooKeeper.getChildren(SERVERS_PATH, this)) {
             servers.add(new String(zooKeeper.getData(
-                    SERVERS_PATH + "/" + s, false, null
+                    joinPath(s), false, null
             )));
         }
         actorConfig.tell(new MessageSendServersList(servers), ActorRef.noSender());

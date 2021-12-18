@@ -10,12 +10,12 @@ import java.time.Duration;
 import static akka.http.javadsl.server.Directives.*;
 
 public class HttpServer implements Watcher {
-    private static final String PATH = "";
-    private static final String PATH_SERVERS = "localhost:";
-    private static final String URL_QUERY_PARAM = "url";
-    private static final String COUNT_QUERY_PARAM = "count";
-    private static final String ZERO_COUNT_STRING = "0";
-    private static final String URL_PATTERN = "http://%s/?url=%s&count=%d";
+    private static final String URL_ROUTE = "";
+    private static final String PATH_SERVERS = AnonymizeApp.HOST_ORIGIN + ":";
+    private static final String QUERY_PARAM_URL = "url";
+    private static final String QUERY_PARAM_COUNT = "count";
+    private static final String ZERO_STRING = "0";
+    private static final String FORMAT_URL_PATTERN = "http://%s/?url=%s&count=%d";
     private static final Duration TIMEOUT = Duration.ofMillis(5000);
 
     private final Http http;
@@ -30,7 +30,7 @@ public class HttpServer implements Watcher {
         this.zooKeeper = zooKeeper;
         this.path = PATH_SERVERS + port;
         zooKeeper.create(
-                "/servers/" + path,
+                ZooKeeperWatcher.joinPath(path),
                 path.getBytes(),
                 ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL
@@ -38,22 +38,19 @@ public class HttpServer implements Watcher {
     }
 
     public Route createRoute() {
-        return route(path(PATH, () -> route(get(() -> parameter(URL_QUERY_PARAM, (url) ->
-                parameter(COUNT_QUERY_PARAM, (count) -> {
+        return route(path(URL_ROUTE, () -> route(get(() -> parameter(QUERY_PARAM_URL, (url) ->
+                parameter(QUERY_PARAM_COUNT, (count) -> {
                     System.out.printf("count=%s on %s", count, path);
-                    if (count.equals(ZERO_COUNT_STRING)) {
-                        return completeWithFuture(
-                                http.singleRequest(HttpRequest.create(url))
-                        );
-                    }
-                    return completeWithFuture(Patterns.ask(
+                    return completeWithFuture(count.equals(ZERO_STRING)
+                            ? http.singleRequest(HttpRequest.create(url))
+                            : Patterns.ask(
                                     actorConfig,
                                     new MessageGetRandomServerUrl(),
                                     TIMEOUT
                             )
                             .thenCompose(resPort -> http.singleRequest(HttpRequest.create(
                                     String.format(
-                                            URL_PATTERN,
+                                            FORMAT_URL_PATTERN,
                                             resPort,
                                             url,
                                             Integer.parseInt(count) - 1
